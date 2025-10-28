@@ -1,0 +1,88 @@
+import 'package:flutter/material.dart';
+// data_models.dart dosyasından ListeOgesi'ni import ettiğinizi varsayalım.
+
+class SayimEkrani extends StatefulWidget {
+  @override
+  _SayimEkraniState createState() => _SayimEkraniState();
+}
+
+class _SayimEkraniState extends State<SayimEkrani> {
+  // Örnek Veri: Gerçek uygulamada bu veriler veritabanından (SQLite) gelecektir.
+  List<ListeOgesi> mezeSayimListesi = [
+    ListeOgesi(ad: "Humus", miktar: 5.5, birim: "kg"),
+    ListeOgesi(ad: "Patlıcan Mutabbel", miktar: 12, birim: "kutu"),
+    ListeOgesi(ad: "Acılı Ezme", miktar: 8, birim: "adet"),
+    ListeOgesi(ad: "Haydari", miktar: 0, birim: "adet"), // Henüz sayılmamış
+  ];
+
+  @override
+  Widget build(BuildContext context) {
+    return Scaffold(
+      appBar: AppBar(
+        title: Text('Meze Sayım Listesi'), // Liste Adı
+      ),
+      // 1. ANA LİSTE YAPISI: ListView.builder
+      body: ListView.builder(
+        itemCount: mezeSayimListesi.length,
+        itemBuilder: (context, index) {
+          final ogemiz = mezeSayimListesi[index];
+          
+          // Her bir liste öğesi için bir Card veya ListTile kullanırız.
+          return ListTile(
+            // 2. ÖĞE ADI: Sol tarafta ürün adı
+            title: Text(ogemiz.ad),
+            
+            // 3. MİKTAR GİRİŞ ALANI: Sağ tarafta miktar düzenleme alanı
+            trailing: Container(
+              width: 150, // TextField'ın genişliği
+              child: Row(
+                mainAxisSize: MainAxisSize.min,
+                children: [
+                  Expanded(
+                    child: TextFormField(
+                      // Başlangıç değeri olarak mevcut miktarı gösterir.
+                      initialValue: ogemiz.miktar.toString(),
+                      keyboardType: TextInputType.number, // Sadece sayı girmeye izin verir
+                      textAlign: TextAlign.right,
+                      decoration: InputDecoration(
+                        hintText: 'Miktar',
+                        border: OutlineInputBorder(),
+                        contentPadding: EdgeInsets.symmetric(vertical: 8.0, horizontal: 10.0),
+                      ),
+                      
+                      // Kullanıcı klavyeden miktarı değiştirdiğinde çalışır.
+                      onChanged: (yeniMiktar) {
+                        // STATE YÖNETİMİ: Miktarı güncelle ve ekranı yeniden çiz (setState)
+                        setState(() {
+                          // Hata kontrolü ekleyerek geçerli sayı olup olmadığını kontrol etmek önemlidir.
+                          ogemiz.miktar = double.tryParse(yeniMiktar) ?? 0.0;
+                          
+                          // NOT: Gerçek uygulamada, bu aşamada veritabanına da kaydetmelisiniz.
+                        });
+                      },
+                    ),
+                  ),
+                  SizedBox(width: 8),
+                  // Miktar Birimi
+                  Text(ogemiz.birim, style: TextStyle(fontSize: 16, fontWeight: FontWeight.bold)),
+                ],
+              ),
+            ),
+          );
+        },
+      ),
+      
+      // Yeni öğe eklemek için FAB (Floating Action Button)
+      floatingActionButton: FloatingActionButton(
+        child: Icon(Icons.add),
+        onPressed: () {
+          // Yeni Ürün Ekleme Mantığı:
+          // Genellikle bu, bir dialog (pencere) açar ve kullanıcıdan ürün adını ister.
+          setState(() {
+            mezeSayimListesi.add(ListeOgesi(ad: "Yeni Ürün", miktar: 0));
+          });
+        },
+      ),
+    );
+  }
+}
